@@ -1,0 +1,2 @@
+rootProject.name = "AudioRecord4Android"
+include ':app'
