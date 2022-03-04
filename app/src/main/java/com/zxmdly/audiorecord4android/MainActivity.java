@@ -1,6 +1,7 @@
 package com.zxmdly.audiorecord4android;
 
 import android.os.Bundle;
+import android.widget.Toast;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
@@ -8,10 +9,15 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import com.hjq.permissions.OnPermissionCallback;
+import com.hjq.permissions.Permission;
+import com.hjq.permissions.XXPermissions;
 import com.zxmdly.audiorecord4android.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import com.zxmdly.record4android.AudioRecordManager;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,8 +41,16 @@ public class MainActivity extends AppCompatActivity {
     binding.fab.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-            .setAction("Action", null).show();
+        XXPermissions.with(MainActivity.this).permission(Permission.RECORD_AUDIO).request(
+            new OnPermissionCallback() {
+              @Override
+              public void onGranted(List<String> permissions, boolean all) {
+//                AudioRecordManager.getInstance().init();
+                        AudioRecordManager.getInstance().startRecording();
+              }
+            });
+//        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//            .setAction("Action", null).show();
       }
     });
   }
