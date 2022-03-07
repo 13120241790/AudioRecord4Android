@@ -2,7 +2,9 @@ package com.zxmdly.record4android;
 
 import android.media.AudioFormat;
 import android.util.Log;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -38,12 +40,14 @@ public class AudioRecordManager extends Thread {
 
   private boolean isCollecting = true;
 
+  private final List<OnRecorderListener> subscribes = new ArrayList<>();
+
   // put 入队
   // offer 入队 offer仅仅对put方法改动了一点点，当队列没有可用元素的时候，不同于put方法的阻塞等待，offer方法直接方法false。
   // take 出队  队列为空，阻塞等待  队列不为空，从队首获取并移除一个元素
   // poll 出队
-  private LinkedBlockingQueue<byte[]> producerQueue = new LinkedBlockingQueue<>();
-  private LinkedBlockingQueue<byte[]> consumerQueue = new LinkedBlockingQueue<>();
+  private final LinkedBlockingQueue<byte[]> producerQueue = new LinkedBlockingQueue<>();
+  private final LinkedBlockingQueue<byte[]> consumerQueue = new LinkedBlockingQueue<>();
 
   public void init() {
     audioRecorder.init(defaultSamplesRate, defaultChannels, defaultSamplesBits);
@@ -95,7 +99,11 @@ public class AudioRecordManager extends Thread {
             try {
               byte[] bytes = consumerQueue.take();
               try {
-                  //TODO 外界分发
+                if (subscribes.size() > 0) {
+                  for (OnRecorderListener o : subscribes) {
+                    o.onDispatch(bytes);
+                  }
+                }
 //                Log.e(TAG,"dispatch : bytes.length " + bytes.length + " obj : " + bytes.toString() + " array : " + Arrays.toString(bytes));
                 Log.e(TAG,"dispatch : bytes.length " + bytes.length + " obj : " + bytes.toString());
               } catch (Exception e) {
@@ -112,7 +120,8 @@ public class AudioRecordManager extends Thread {
       });
       dispatchThread.start();
       Log.e(TAG, "start record ~");
-      while (isCollecting) {//暂停队列采集
+      while (isCollecting) {
+        //暂停队列采集
 //        try {
 //          Thread.sleep(50);
 //        } catch (InterruptedException e) {
@@ -129,7 +138,6 @@ public class AudioRecordManager extends Thread {
           e.printStackTrace();
         }
       }
-
       audioRecorder.stop();
       Log.e(TAG, "stop record ~");
       dispatchThread.interrupt();
@@ -144,4 +152,15 @@ public class AudioRecordManager extends Thread {
       }
     }
 //  }
+
+  public void addSubscribe(OnRecorderListener onRecorderListener){
+    if (!subscribes.contains(onRecorderListener)) {
+      subscribes.add(onRecorderListener);
+    }
+  }
+
+  public void removeSubscribe(OnRecorderListener onRecorderListener){
+    subscribes.remove(onRecorderListener);
+  }
+
 }

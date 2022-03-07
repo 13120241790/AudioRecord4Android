@@ -1,6 +1,7 @@
 package com.zxmdly.audiorecord4android;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +18,7 @@ import com.zxmdly.audiorecord4android.databinding.ActivityMainBinding;
 import android.view.Menu;
 import android.view.MenuItem;
 import com.zxmdly.record4android.AudioRecordManager;
+import com.zxmdly.record4android.OnRecorderListener;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -51,6 +53,12 @@ public class MainActivity extends AppCompatActivity {
             });
 //        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //            .setAction("Action", null).show();
+      }
+    });
+    AudioRecordManager.getInstance().addSubscribe(new OnRecorderListener() {
+      @Override
+      public void onDispatch(byte[] bytes) {
+        Log.e("zxm","onDispatch MainActivity bytes ：" + bytes.length + " obj " + bytes.toString());
       }
     });
   }
